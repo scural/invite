@@ -6,7 +6,6 @@
 <title>RSVP</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💌</text></svg>">
 
-
 <!--
   HOW TO EDIT THIS FILE
   ======================
@@ -587,6 +586,150 @@
     100% { transform: translate(calc(-50% + var(--dx)), -64px) scale(1) rotate(var(--rot)); opacity: 0; }
   }
 
+
+  /* ---------- cursor heart trail ---------- */
+  .cursor-heart {
+    position: fixed;
+    z-index: 9999;
+    width: 11px;
+    height: 10px;
+    fill: var(--red);
+    pointer-events: none;
+    animation: cursorHeartFloat 0.95s ease-out forwards;
+    transform: translate(-50%, -50%) scale(0.55);
+    filter: drop-shadow(0 1px 1px rgba(70, 35, 20, 0.08));
+  }
+
+  @keyframes cursorHeartFloat {
+    0% { opacity: 0; transform: translate(-50%, -45%) scale(0.45) rotate(0deg); }
+    15% { opacity: 0.9; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.95) rotate(var(--rot)); }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .cursor-heart { display: none; }
+  }
+
+  /* ---------- anniversary passcode ---------- */
+  .lock-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--bg);
+    text-align: center;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+
+  .lock-screen.unlocked {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .lock-card {
+    width: min(100%, 360px);
+  }
+
+  .lock-eyebrow {
+    margin: 0 0 24px;
+    color: var(--red);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .lock-title {
+    margin: 0;
+    font-family: var(--serif);
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(34px, 9vw, 48px);
+  }
+
+  .lock-sub {
+    margin: 14px 0 22px;
+    color: var(--ink-soft);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+  }
+
+  .lock-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .lock-input {
+    width: 150px;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 24px;
+    letter-spacing: 0.28em;
+    text-align: center;
+    padding: 8px 4px;
+    outline: none;
+  }
+
+  .lock-input:focus { border-bottom-color: var(--red); }
+
+  .lock-button {
+    border: 1px solid var(--red);
+    border-radius: 100px;
+    background: transparent;
+    color: var(--red);
+    padding: 9px 22px;
+    font: 500 11px var(--sans);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+
+  .lock-button:hover { background: var(--red); color: var(--bg); }
+
+  .lock-error {
+    min-height: 1.2em;
+    margin: 14px 0 0;
+    color: var(--red);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+  }
+
+  body.locked { overflow: hidden; }
+
+  /* Keep the main column truly centered on narrow screens. */
+  .day-inner { margin-left: auto; margin-right: auto; }
+
+  /* ---------- scratch emoji: use native text instead of canvas ---------- */
+  .scratch-emoji {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 34px;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  @media (max-width: 480px) {
+    .day { width: 100%; padding-left: 20px; padding-right: 20px; }
+    .day-inner { width: min(100%, 560px); }
+    .scratch-grid { grid-template-columns: repeat(3, minmax(0, 78px)); grid-template-rows: repeat(3, 78px); }
+  }
+
   @media (max-width: 480px) {
     .day { padding: 110px 20px 110px; }
     .reel { right: 12px; gap: 14px; }
@@ -602,6 +745,19 @@
 </style>
 </head>
 <body>
+
+<div class="lock-screen" id="lock-screen" aria-modal="true" role="dialog">
+  <div class="lock-card">
+    <!-- <p class="lock-eyebrow">A little something for us</p> -->
+    <h1 class="lock-title">Enter our date...</h1>
+    <p class="lock-sub">MMDD</p>
+    <form class="lock-form" id="lock-form">
+      <input id="passcode" class="lock-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="••••" aria-label="Anniversary date">
+      <button class="lock-button" type="submit">Open</button>
+    </form>
+    <p class="lock-error" id="lock-error" aria-live="polite"></p>
+  </div>
+</div>
 
 <svg class="grain" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
   <filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter>
@@ -851,15 +1007,15 @@
     <div class="scratch-card" id="scratch-card" hidden>
       <p class="scratch-intro">Scratch three in a row to win</p>
       <div class="scratch-grid" id="scratch-grid">
-        <div class="scratch-cell"><canvas class="scratch-icon" width="80" height="80"></canvas><canvas class="scratch-cover" width="80" height="80"></canvas></div>
-        <div class="scratch-cell"><canvas class="scratch-icon" width="80" height="80"></canvas><canvas class="scratch-cover" width="80" height="80"></canvas></div>
-        <div class="scratch-cell"><canvas class="scratch-icon" width="80" height="80"></canvas><canvas class="scratch-cover" width="80" height="80"></canvas></div>
-        <div class="scratch-cell"><canvas class="scratch-icon" width="80" height="80"></canvas><canvas class="scratch-cover" width="80" height="80"></canvas></div>
-        <div class="scratch-cell"><canvas class="scratch-icon" width="80" height="80"></canvas><canvas class="scratch-cover" width="80" height="80"></canvas></div>
-        <div class="scratch-cell"><canvas class="scratch-icon" width="80" height="80"></canvas><canvas class="scratch-cover" width="80" height="80"></canvas></div>
-        <div class="scratch-cell"><canvas class="scratch-icon" width="80" height="80"></canvas><canvas class="scratch-cover" width="80" height="80"></canvas></div>
-        <div class="scratch-cell"><canvas class="scratch-icon" width="80" height="80"></canvas><canvas class="scratch-cover" width="80" height="80"></canvas></div>
-        <div class="scratch-cell"><canvas class="scratch-icon" width="80" height="80"></canvas><canvas class="scratch-cover" width="80" height="80"></canvas></div>
+        <div class="scratch-cell"><span class="scratch-emoji" aria-hidden="true"></span><canvas class="scratch-cover" width="80" height="80"></canvas></div>
+        <div class="scratch-cell"><span class="scratch-emoji" aria-hidden="true"></span><canvas class="scratch-cover" width="80" height="80"></canvas></div>
+        <div class="scratch-cell"><span class="scratch-emoji" aria-hidden="true"></span><canvas class="scratch-cover" width="80" height="80"></canvas></div>
+        <div class="scratch-cell"><span class="scratch-emoji" aria-hidden="true"></span><canvas class="scratch-cover" width="80" height="80"></canvas></div>
+        <div class="scratch-cell"><span class="scratch-emoji" aria-hidden="true"></span><canvas class="scratch-cover" width="80" height="80"></canvas></div>
+        <div class="scratch-cell"><span class="scratch-emoji" aria-hidden="true"></span><canvas class="scratch-cover" width="80" height="80"></canvas></div>
+        <div class="scratch-cell"><span class="scratch-emoji" aria-hidden="true"></span><canvas class="scratch-cover" width="80" height="80"></canvas></div>
+        <div class="scratch-cell"><span class="scratch-emoji" aria-hidden="true"></span><canvas class="scratch-cover" width="80" height="80"></canvas></div>
+        <div class="scratch-cell"><span class="scratch-emoji" aria-hidden="true"></span><canvas class="scratch-cover" width="80" height="80"></canvas></div>
       </div>
       <p class="scratch-result" id="scratch-result"></p>
     </div>
@@ -923,9 +1079,45 @@
   // device or to Tyler's browser if he opens his own copy of the page.
   const STORAGE_PREFIX = 'nyAnniversary:';
 
+  // ---- anniversary passcode ----
+  const PASSCODE = '0908';
+  const LOCK_KEY = STORAGE_PREFIX + 'unlocked';
+
+
   function slug(str) {
     return (str || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }
+
+  const lockScreen = document.getElementById('lock-screen');
+  const lockForm = document.getElementById('lock-form');
+  const passcodeInput = document.getElementById('passcode');
+  const lockError = document.getElementById('lock-error');
+
+  function unlock() {
+    localStorage.setItem(LOCK_KEY, '1');
+    lockScreen.classList.add('unlocked');
+    document.body.classList.remove('locked');
+    setTimeout(() => passcodeInput.blur(), 100);
+  }
+
+  if (localStorage.getItem(LOCK_KEY) === '1') {
+    lockScreen.classList.add('unlocked');
+  } else {
+    document.body.classList.add('locked');
+    setTimeout(() => passcodeInput.focus(), 300);
+  }
+
+  lockForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (passcodeInput.value === PASSCODE) {
+      lockError.textContent = '';
+      unlock();
+    } else {
+      lockError.textContent = 'Hmm… try our date again ♡';
+      passcodeInput.value = '';
+      passcodeInput.focus();
+    }
+  });
 
   // ---- tappable hearts on each stop (persisted) ----
   document.querySelectorAll('.stop-heart').forEach(btn => {
@@ -1047,12 +1239,9 @@
 
   // icons are drawn as emoji (rendered by the browser/OS, not hand-coded
   // shapes) — the "icon" value in PRIZES just needs to be a single emoji
-  function drawIcon(ctx, canvas, icon) {
-    ctx.font = Math.floor(canvas.width * 0.42) + 'px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(icon, canvas.width / 2, canvas.height / 2 + canvas.height * 0.02);
-  }
+  // Emoji are rendered as native HTML text instead of canvas so they use the
+  // device's color emoji font and stay crisp on both iPhone and desktop.
+  function drawIcon(el, icon) { el.textContent = icon; }
 
   function initScratchCard(prize) {
     const decoyIcons = PRIZES.map(p => p.icon).filter(icon => icon !== prize.icon);
@@ -1067,15 +1256,12 @@
     const redColor = getComputedStyle(document.documentElement).getPropertyValue('--red').trim() || '#A3221E';
 
     cells.forEach((cell, idx) => {
-      const iconCanvas = cell.querySelector('.scratch-icon');
+      const iconEl = cell.querySelector('.scratch-emoji');
       const coverCanvas = cell.querySelector('.scratch-cover');
-      const iconCtx = iconCanvas.getContext('2d');
       const coverCtx = coverCanvas.getContext('2d');
 
-      // bottom layer: drawn once, never touched by scratching
-      iconCtx.fillStyle = paperColor;
-      iconCtx.fillRect(0, 0, iconCanvas.width, iconCanvas.height);
-      drawIcon(iconCtx, iconCanvas, grid[idx]);
+      // bottom layer: native emoji text, never touched by scratching
+      drawIcon(iconEl, grid[idx]);
 
       // top layer: the scratchable cover, on its own separate canvas
       coverCtx.fillStyle = redColor;
@@ -1148,6 +1334,31 @@
 
   // ---- RSVP button + heart burst (persisted) ----
   const HEART_PATH = "M8 13.5 C3.2 9.8 0.5 6.7 0.5 4 C0.5 1.8 2.3 0 4.5 0 C6 0 7.3 0.9 8 2.3 C8.7 0.9 10 0 11.5 0 C13.7 0 15.5 1.8 15.5 4 C15.5 6.7 12.8 9.8 8 13.5 Z";
+  // ---- subtle heart trail following the mouse ----
+  let lastTrailTime = 0;
+  document.addEventListener('mousemove', (e) => {
+    const now = performance.now();
+    if (now - lastTrailTime < 95) return;
+    lastTrailTime = now;
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    const heart = document.createElementNS(svgNS, "svg");
+    heart.setAttribute("viewBox", "0 0 16 14");
+    heart.setAttribute("class", "cursor-heart");
+    heart.style.left = e.clientX + 'px';
+    heart.style.top = e.clientY + 'px';
+    heart.style.setProperty('--dx', (Math.random() * 18 - 9) + 'px');
+    heart.style.setProperty('--dy', (-20 - Math.random() * 18) + 'px');
+    heart.style.setProperty('--rot', (Math.random() * 40 - 20) + 'deg');
+
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", HEART_PATH);
+    heart.appendChild(path);
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 1000);
+  });
+
+
   const RSVP_KEY = STORAGE_PREFIX + 'rsvp';
 
   function burstHearts(container) {
