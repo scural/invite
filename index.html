@@ -215,7 +215,7 @@
     isolation: isolate;
   }
 
-  .day::before {
+  /* .day::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -223,6 +223,19 @@
       ellipse 70% 55% at 50% 15%,
       rgba(var(--tint), 0.16),
       transparent 68%
+    );
+    z-index: -1;
+  } */
+
+  .day::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(var(--tint-top), var(--alpha-top)) 0%,
+      rgba(var(--tint), 0.16) 50%,
+      rgba(var(--tint-bottom), var(--alpha-bottom)) 100%
     );
     z-index: -1;
   }
@@ -781,6 +794,8 @@
   <p class="curtain-eyebrow reveal">Hello Dailer,</p>
   <h1 class="curtain-title reveal">Let's Celebrate Big Old 3 Years!</h1>
   <p class="curtain-sub reveal">September 24 &ndash; 27</p>
+  <img src="assets/us.jpeg" class="decor-img"
+            style="--x:12%; --y:70%; --w:130px; --rot:-8deg;" alt="">
 
   <a class="calendar-link reveal"
      href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Four%20Days%20in%20New%20York&dates=20260924/20260928&details=Our%20anniversary%20trip%20itinerary&location=New%20York%2C%20NY"
@@ -865,10 +880,18 @@
   </div>
 </section>
 
+<!-- <img src="assets/dailer.jpg" class="decor-img"
+            style="--x:88%; --y:20%; --w:130px; --rot:-8deg;" alt=""> -->
+
+<!-- <img src="assets/dailer.jpg" class="decor-img reveal" alt=""
+       style="--x:88%; --y:20%; --w:150px; --rot:12deg;"> -->
+
 <!-- ============== EDIT ME: DAY TWO ============== -->
 <section class="day" data-tint="hike" id="day-2">
-  <img src="assets/prop2.png" class="decor-img reveal" alt=""
-       style="--x:88%; --y:20%; --w:150px; --rot:12deg;">
+  <img src="assets/cute.jpg" class="decor-img reveal" alt=""
+       style="--x:65%; --y:20%; --w:250px; --rot:12deg;">
+  <img src="assets/bears2.jpg" class="decor-img reveal" alt=""
+       style="--x:80%; --y:30%; --w:300px; --rot:12deg;">
   <div class="day-inner">
     <p class="day-index reveal">II.</p>
     <p class="day-date reveal">Thursday, September 25</p>
@@ -912,6 +935,10 @@
 <!-- ============== EDIT ME: DAY THREE ============== -->
 <section class="day" data-tint="brooklyn" id="day-3">
   <div class="day-inner">
+    <img src="assets/cat.png" class="decor-img reveal" alt=""
+       style="--x:2%; --y:-5%; --w:300px; --rot:12deg;">
+    <img src="assets/thang.png" class="decor-img reveal" alt=""
+       style="--x:60%; --y:50%; --w:200px; --rot:12deg;">
     <p class="day-index reveal">III.</p>
     <p class="day-date reveal">Friday, September 26</p>
     <h2 class="day-title reveal">Brooklyn Day</h2>
@@ -963,6 +990,8 @@
     <p class="day-index reveal">IV.</p>
     <p class="day-date reveal">Saturday, September 27</p>
     <h2 class="day-title reveal">Last Day :(</h2>
+    <img src="assets/fun.JPG" class="decor-img"
+             style="--x:50%; --y:90%; --w:400px; --rot:0deg;" alt="">
 
     <ul class="stops">
       <!-- <li class="stop reveal">
@@ -1028,15 +1057,39 @@
 
 <script>
   // ---- per-day ambient tint ----
-  const tintMap = {
-    arrival: 'var(--tint-arrival)',
-    hike: 'var(--tint-hike)',
-    brooklyn: 'var(--tint-brooklyn)',
-    last: 'var(--tint-last)'
+  // const tintMap = {
+  //   arrival: 'var(--tint-arrival)',
+  //   hike: 'var(--tint-hike)',
+  //   brooklyn: 'var(--tint-brooklyn)',
+  //   last: 'var(--tint-last)'
+  // };
+  // document.querySelectorAll('.day').forEach(day => {
+  //   const key = day.dataset.tint;
+  //   if (tintMap[key]) day.style.setProperty('--tint', tintMap[key]);
+  // });
+
+  const tints = {
+  arrival:  [214, 150, 95],
+    hike:     [180, 165, 110],
+    brooklyn: [190, 130, 120],
+    last:     [195, 165, 140]
   };
-  document.querySelectorAll('.day').forEach(day => {
+  const order = ['arrival', 'hike', 'brooklyn', 'last'];
+
+  function blend(a, b) {
+    return a.map((v, i) => Math.round((v + b[i]) / 2)).join(', ');
+  }
+
+  document.querySelectorAll('.day').forEach((day, i) => {
     const key = day.dataset.tint;
-    if (tintMap[key]) day.style.setProperty('--tint', tintMap[key]);
+    const prev = order[i - 1] ? tints[order[i - 1]] : null;
+    const next = order[i + 1] ? tints[order[i + 1]] : null;
+
+    day.style.setProperty('--tint', tints[key].join(', '));
+    day.style.setProperty('--tint-top', prev ? blend(prev, tints[key]) : tints[key].join(', '));
+    day.style.setProperty('--tint-bottom', next ? blend(tints[key], next) : tints[key].join(', '));
+    day.style.setProperty('--alpha-top', prev ? '0.16' : '0');
+    day.style.setProperty('--alpha-bottom', next ? '0.16' : '0');
   });
 
   // ---- reveal-on-scroll ----
